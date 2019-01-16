@@ -5,7 +5,7 @@
 	correspond to a four digit number with two decimal precision.
 */
 
-void acceptCommand(char[] command)
+void acceptCommand(char* command)
 {
 	int direction = -1;
 	
