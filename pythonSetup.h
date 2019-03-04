@@ -11,6 +11,7 @@ void setupInterpreter(char *argv[])
 	}
 	Py_SetProgramName(argv[0]);
 	Py_Initialize();
+	PyEval_InitThreads();
 }
 
 void shutdownInterpreter()

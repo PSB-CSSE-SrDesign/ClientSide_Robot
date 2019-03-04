@@ -1,0 +1,5 @@
+gcc -I/usr/include/python3.5m main.c -o main -lpython3.5m -lpthread
+
+gcc -I/usr/include/python3.5m radar.c -o radar -lpython3.5m
+
+.25 sec @ .5 speed = 2.5 inches

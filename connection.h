@@ -7,7 +7,8 @@
 #define PORT 27015
 
 int sock = 0;
-char DEFAULT_CONNECTION[] = "192.168.86.3";
+char DEFAULT_CONNECTION[] = "192.168.86.21";
+//192.168.86.3
 
 struct Packet
 {
@@ -41,21 +42,27 @@ void connectionSetup(char connectionAddr[20])
 	if (connect(sock, (struct sockaddr*) &serv_addr, sizeof(serv_addr)) < 0)
 	{
 		printf("\nConnection Failed\n");
-		return;
+		exit(1);
 	}
 }
 
-unsigned char* serializeInt(unsigned char *buffer, int value)
+unsigned char* serializeInt(char *buffer, int value)
 {
-	buffer[0] = value >> 24;
-	buffer[1] = value >> 16;
-	buffer[2] = value >> 8;
-	buffer[3] = value;
-	buffer += 4;
-	return &buffer;
+	union
+	{
+		int a;
+		unsigned char bytes[4];
+	} b;
+	b.a = value;
+	
+	buffer[0] = b.bytes[0];
+	buffer[1] = b.bytes[1];
+	buffer[2] = b.bytes[2];
+	buffer[3] = b.bytes[3];
+	return buffer + 4;
 }
 
-unsigned char* serializeFloat(unsigned char *buffer, float value)
+unsigned char* serializeFloat(char *buffer, float value)
 {
 	union
 	{
@@ -76,23 +83,38 @@ void sendData(struct Packet *packet)
 	fseek(packet->image, 0L, SEEK_END);
 	int imageSize = ftell(packet->image);
 	rewind(packet->image);
-	unsigned char *buffer = (unsigned char*)malloc(sizeof(unsigned char)*imageSize + 8);
+	char *buffer = (char*)malloc(sizeof(char)*(imageSize + 9));
 	buffer = serializeFloat(buffer, packet->range);
 	buffer = serializeInt(buffer, imageSize);
-	buffer -= (imageSize + 8);
-	fread(buffer, 1, imageSize, packet->image);
+	char *fileBuffer = (char*)malloc(sizeof(char)*(imageSize+1));
+	size_t result = fread(fileBuffer, 1, imageSize, packet->image);
+	int i;
+	for (i = 0; i < imageSize; i++)
+	{
+		buffer[i] = fileBuffer[i];
+	}
 	
 	buffer -= 8;
-	write(sock, buffer, sizeof(buffer));
+	
+	int sendResult = write(sock, buffer, imageSize+8);
+	printf("%i\n", sendResult);
+	
+	/*
+	if (sendResult > -1)
+	{
+		FILE* testImage = fopen("/home/pi/Documents/image2.jpg", "w");
+		size_t saved = fwrite(fileBuffer, sizeof(char), imageSize, testImage);
+		printf("Wrote bytes: %i\n", saved);
+	}
+	*/
 }
 
 void receiveData(char *buffer)
 {
 	int valread = read(sock, buffer, 8);
-	printf("1\n");
 	if (valread != 8)
 	{
-		printf("\nCommand Read Error\n");
+		printf("Command Read Error: %i : %s\n", valread, buffer);
 		int i;
 		for (i = 0; i < 8; i++)
 		{

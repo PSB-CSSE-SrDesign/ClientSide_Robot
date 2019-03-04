@@ -5,6 +5,8 @@
 	correspond to a four digit number with two decimal precision.
 */
 
+int run = 1;
+
 void acceptCommand(char* command)
 {
 	int direction = -1;
@@ -26,6 +28,15 @@ void acceptCommand(char* command)
 	{
 		direction = 3;
 	}
+	else if (command[0] == 'S' && command[1] == 'H' && command[2] == 'U' && command[3] == 'T'
+	&& command[4] == 'D' && command[5] == 'O' && command[6] == 'W' && command[7] == 'N')
+	{
+		run = 0;
+	}
+	else
+	{
+		return;
+	}
 	
 	//Parsing Distance/Angle
 	float distance = 0;
@@ -35,4 +46,9 @@ void acceptCommand(char* command)
 	distance += (command[7] - 48) / 100.0;
 	
 	move(direction, distance);
+}
+
+int getRun()
+{
+	return run;
 }

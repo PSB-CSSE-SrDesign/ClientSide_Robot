@@ -1,4 +1,6 @@
 #include <Python.h>
+#include <string.h>
+#include <stdio.h>
 
 void moveForward()
 {
@@ -12,12 +14,12 @@ void moveForward()
 
 void moveBackward()
 {
-	PyRun_SimpleString("from adafruit_motorkit import MotorKit"
-	"kit = MotorKit()"
-	"kit.motor1.throttle = -.5"
-	"kit.motor2.throttle = -.5"
-	"kit.motor3.throttle = -.5"
-	"kit.motor4.throttle = -.5");
+	PyRun_SimpleString("from adafruit_motorkit import MotorKit\n"
+	"kit = MotorKit()\n"
+	"kit.motor1.throttle = -.5\n"
+	"kit.motor2.throttle = -.5\n"
+	"kit.motor3.throttle = -.5\n"
+	"kit.motor4.throttle = -.5\n");
 }
 
 void stopMoving()
@@ -30,6 +32,66 @@ void stopMoving()
 	"kit.motor4.throttle = 0\n");
 }
 
+void turnLeft(float angle)
+{
+	char num[5];
+	gcvt(angle, 4, num);
+	
+	const char *beginning = "import time\n"
+	"from adafruit_motorkit import MotorKit\n"
+	"factor = 135.0\n"
+	"kit = MotorKit()\n"
+	"kit.motor1.throttle = 1\n"
+	"kit.motor2.throttle = 1\n"
+	"kit.motor3.throttle = -1\n"
+	"kit.motor4.throttle = -1\n"
+	"time.sleep(";
+	
+	const char *ending = " / factor)\n"
+	"kit.motor1.throttle = 0\n"
+	"kit.motor2.throttle = 0\n"
+	"kit.motor3.throttle = 0\n"
+	"kit.motor4.throttle = 0\n";
+	
+	char *total;
+	total = malloc(strlen(beginning)+strlen(ending)+5);
+	strcpy(total, beginning);
+	strcat(total, num);
+	strcat(total, ending);
+	
+	PyRun_SimpleString(total);
+}
+
+void turnRight(float angle)
+{
+	char num[5];
+	gcvt(angle, 4, num);
+	
+	const char *beginning = "import time\n"
+	"from adafruit_motorkit import MotorKit\n"
+	"factor = 135.0\n"
+	"kit = MotorKit()\n"
+	"kit.motor1.throttle = -1\n"
+	"kit.motor2.throttle = -1\n"
+	"kit.motor3.throttle = 1\n"
+	"kit.motor4.throttle = 1\n"
+	"time.sleep(";
+	
+	const char *ending = " / factor)\n"
+	"kit.motor1.throttle = 0\n"
+	"kit.motor2.throttle = 0\n"
+	"kit.motor3.throttle = 0\n"
+	"kit.motor4.throttle = 0\n";
+	
+	char *total;
+	total = malloc(strlen(beginning)+strlen(ending)+5);
+	strcpy(total, beginning);
+	strcat(total, num);
+	strcat(total, ending);
+	
+	PyRun_SimpleString(total);
+}
+
 void move(int direction, float distance)
 {
 	if (direction != -1)
@@ -39,7 +101,7 @@ void move(int direction, float distance)
 			moveForward();
 			
 			//CHANGE ONCE DISTANCE CONVERSION IS DETERMINED!!!!!!!!!!!!!!
-			sleep(1);
+			usleep(1000000);
 			
 			stopMoving();
 		}
@@ -48,29 +110,23 @@ void move(int direction, float distance)
 			moveBackward();
 			
 			//CHANGE ONCE DISTANCE CONVERSION IS DETERMINED!!!!!!!!!!!!!!
-			sleep(1);
+			usleep(1000000);
 			
 			stopMoving();
 		}
 		else if (direction == 2)
 		{
-			turn(distance);
+			turnLeft(distance);
 			
 			stopMoving();
 		}
 		else if (direction == 3)
 		{
-			direction *= -1;
-			turn(distance);
+			turnRight(distance);
 			
 			stopMoving();
 		}
 		
 		printf("Done Moving\n");
 	}
-}
-
-void turn(float angle)
-{
-	
 }
