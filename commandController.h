@@ -31,7 +31,9 @@ void acceptCommand(char* command)
 	else if (command[0] == 'S' && command[1] == 'H' && command[2] == 'U' && command[3] == 'T'
 	&& command[4] == 'D' && command[5] == 'O' && command[6] == 'W' && command[7] == 'N')
 	{
+		printf("Received SHUTDOWN\n");
 		run = 0;
+		return;
 	}
 	else
 	{

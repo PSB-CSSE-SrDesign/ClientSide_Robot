@@ -39,7 +39,7 @@ void turnLeft(float angle)
 	
 	const char *beginning = "import time\n"
 	"from adafruit_motorkit import MotorKit\n"
-	"factor = 135.0\n"
+	"factor = 180.0\n"
 	"kit = MotorKit()\n"
 	"kit.motor1.throttle = 1\n"
 	"kit.motor2.throttle = 1\n"
@@ -69,7 +69,7 @@ void turnRight(float angle)
 	
 	const char *beginning = "import time\n"
 	"from adafruit_motorkit import MotorKit\n"
-	"factor = 135.0\n"
+	"factor = 180.0\n"
 	"kit = MotorKit()\n"
 	"kit.motor1.throttle = -1\n"
 	"kit.motor2.throttle = -1\n"
@@ -101,7 +101,7 @@ void move(int direction, float distance)
 			moveForward();
 			
 			//CHANGE ONCE DISTANCE CONVERSION IS DETERMINED!!!!!!!!!!!!!!
-			usleep(1000000);
+			usleep(100000);
 			
 			stopMoving();
 		}
@@ -110,7 +110,7 @@ void move(int direction, float distance)
 			moveBackward();
 			
 			//CHANGE ONCE DISTANCE CONVERSION IS DETERMINED!!!!!!!!!!!!!!
-			usleep(1000000);
+			usleep(100000);
 			
 			stopMoving();
 		}

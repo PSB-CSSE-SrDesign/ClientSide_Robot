@@ -1,3 +1,5 @@
+#ifndef PYTHONSETUP
+#define PYTHONSETUP
 #include <Python.h>
 wchar_t *p = NULL;
 
@@ -18,3 +20,4 @@ void shutdownInterpreter()
 {
 	Py_Finalize();
 }
+#endif

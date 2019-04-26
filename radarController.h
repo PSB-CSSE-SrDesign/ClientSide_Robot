@@ -1,9 +1,12 @@
+#ifndef RADARCONTROLLER
+#define RADARCONTROLLER
 #include <Python.h>
 #include <pthread.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <stdlib.h>
 
 FILE *radarPipe;
 const char* pipeName = "/home/pi/Documents/radarPipe.fifo";
@@ -11,9 +14,16 @@ int readData = 0;
 
 void startRadarThread()
 {
+	int status = system("python /home/pi/Documents/radar.py");
+	status = status / 256;
+	printf("Status: %i\n", status);
+	
+	/*
 	PyRun_SimpleString("import os\n"
 "import serial\n"
 "import struct\n"
+"from picamera import PiCamera\n"
+"import time\n"
 "Ops241A_Speed_Output_Units = 'UM'\n"
 "Ops241A_Direction_Control = 'Od'\n"
 "Ops241A_Sampling_Frequency = 'SV'\n"
@@ -62,6 +72,8 @@ void startRadarThread()
 "	)\n"
 "done = False\n"
 "radarPipe = os.open('/home/pi/Documents/radarPipe.fifo', os.O_WRONLY)\n"
+"count = 0\n"
+"lastTime = 0\n"
 "while not done:\n"
 "	speed_available = False\n"
 "	Ops241_rx_bytes = ser.readline()\n"
@@ -69,9 +81,18 @@ void startRadarThread()
 "	if (Ops241_rx_bytes_length != 0) :\n"
 "		Ops241_rx_str = str(Ops241_rx_bytes)\n"
 "		if Ops241_rx_str.find('{') == -1 :\n"
-"			Ops241_rx_float = float(Ops241_rx_bytes)\n"
-"			rangeBytes = bytearray(struct.pack(\"f\", Ops241_rx_float))\n"
-"			os.write(radarPipe, Ops241_rx_bytes)\n");
+"			currentTime = time.time()\n"
+"			if ((currentTime - lastTime) > .25) :\n"
+"				lastTime = currentTime\n"
+"				camera = PiCamera()\n"
+"				camera.awb_mode = 'fluorescent'\n"
+"				camera.capture('/home/pi/Documents/Images/image_'+str(count)+'.jpg', 'jpeg', 1)\n"
+"				camera.close()\n"
+"				print(count)\n"
+"				print(currentTime)\n"
+"				count = count + 1\n"
+"				os.write(radarPipe, Ops241_rx_bytes)\n");
+*/
 }
 
 void startRadar()
@@ -112,3 +133,4 @@ void radarCleanUp()
 		printf("Failed to delete pipe\n");
 	}
 }
+#endif

@@ -3,12 +3,15 @@
 #include <stdlib.h>
 #include <netinet/in.h>
 #include <string.h>
+#include "radarController.h"
+#include "pythonSetup.h"
 
 #define PORT 27015
 
 int sock = 0;
 char DEFAULT_CONNECTION[] = "192.168.86.21";
-//192.168.86.3
+//192.168.86.21
+char ENDOFMESSAGE[] = "Northrop Grumman rocks!!";
 
 struct Packet
 {
@@ -16,8 +19,9 @@ struct Packet
 	float range;
 };
 
-void connectionSetup(char connectionAddr[20])
+void connectionSetup()
 {
+	char connectionAddr[20];
 	struct sockaddr_in address;
 	struct sockaddr_in serv_addr;
 	sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -32,6 +36,11 @@ void connectionSetup(char connectionAddr[20])
 	
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(PORT);
+	
+	FILE *config;
+	config = fopen("/home/pi/Documents/config.txt", "r");
+	fgets(connectionAddr, 20, config);
+	printf("%s\n", connectionAddr);
 	
 	if (inet_pton(AF_INET, connectionAddr, &serv_addr.sin_addr) <= 0)
 	{
@@ -80,7 +89,11 @@ unsigned char* serializeFloat(char *buffer, float value)
 
 void sendData(struct Packet *packet)
 {
-	fseek(packet->image, 0L, SEEK_END);
+	int seek = fseek(packet->image, 0L, SEEK_END);
+	if (seek != 0)
+	{
+		printf("Failed seek\n");
+	}
 	int imageSize = ftell(packet->image);
 	rewind(packet->image);
 	char *buffer = (char*)malloc(sizeof(char)*(imageSize + 9));
@@ -88,6 +101,8 @@ void sendData(struct Packet *packet)
 	buffer = serializeInt(buffer, imageSize);
 	char *fileBuffer = (char*)malloc(sizeof(char)*(imageSize+1));
 	size_t result = fread(fileBuffer, 1, imageSize, packet->image);
+	printf("%i\n", result);
+	printf("%i\n", imageSize);
 	int i;
 	for (i = 0; i < imageSize; i++)
 	{
@@ -95,18 +110,8 @@ void sendData(struct Packet *packet)
 	}
 	
 	buffer -= 8;
-	
 	int sendResult = write(sock, buffer, imageSize+8);
 	printf("%i\n", sendResult);
-	
-	/*
-	if (sendResult > -1)
-	{
-		FILE* testImage = fopen("/home/pi/Documents/image2.jpg", "w");
-		size_t saved = fwrite(fileBuffer, sizeof(char), imageSize, testImage);
-		printf("Wrote bytes: %i\n", saved);
-	}
-	*/
 }
 
 void receiveData(char *buffer)
@@ -120,6 +125,11 @@ void receiveData(char *buffer)
 		{
 			buffer[i] = 0;
 		}
+		write(sock, "CONFIRM!", 8);
+		shutdownInterpreter();
+		radarCleanUp();
+		fileCleanUp();
+		exit(0);
 	}
 	
 	return;
